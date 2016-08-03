@@ -1,4 +1,8 @@
 *.log
 *.pot
 *.pyc
+.idea
+.DS_Store
+db.sqlite3
+migrations
 local_settings.py
