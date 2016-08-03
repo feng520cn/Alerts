@@ -9,25 +9,31 @@
 ##安装/使用
 **步骤 1**: 下载代码
 
-```git clone https://git.oschina.net/XJGZ/Alerts.git Alerts```
+```
+git clone https://git.oschina.net/XJGZ/Alerts.git Alerts
+```
 
 **步骤 2**: 配置
 
-```cd Alerts
+```
+cd Alerts
 #修改./Alerts/views.py的第11行，将mongoDB的连接信息配置上去
 #修改./Alerts/views.py的第41和86行，将校验码（密码）修改为自己定义的密码
 ```
 
 **步骤 3**: 运行
 
-```./manage.py runserver 0.0.0.0 8000
-#正式环境请使用其他的多进程/线程方式运行，如gunicorn```
+```
+./manage.py runserver 0.0.0.0 8000
+#正式环境请使用其他的多进程/线程方式运行，如gunicorn
+```
 
 **步骤 3**: 使用
 
 - 收集告警
 
-```任何告警通过以下格式，使用"Content-Type": "application/x-www-form-urlencoded"post以下字符串（需要转换成url编码）到这个接口
+```
+任何告警通过以下格式，使用"Content-Type": "application/x-www-form-urlencoded"post以下字符串（需要转换成url编码）到这个接口
 {"type": "0",
 "level": "告警级别",
 "item": "告警项",
