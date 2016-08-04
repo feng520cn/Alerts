@@ -41,7 +41,7 @@ cd Alerts
 "hostname": "主机名",
 "datetime": "告警时间",
 "EventID": "事件id",
-"ACK": "xjACK"}
+"ACK": "xjACK"(这个要与步骤2的校验码相同)}
 
 {"type": "1",
 "level": "告警级别",
@@ -50,14 +50,14 @@ cd Alerts
 "hostname": "主机名",
 "datetime": "恢复时间",
 "EventID": "事件id",
-"ACK": "xjACK"}
+"ACK": "xjACK"(这个要与步骤2的校验码相同)}
 ```
 
-- 分析告警
+- 分析告警(crontab定时触发，时间间隔为告警汇总的时间区间)
 
 ```
 使用"Content-Type": "application/x-www-form-urlencoded"post以下字符串到这个接口
-ACK=xjACK
+ACK=xjACK(这个要与步骤2的校验码相同)
 ```
 
 ##告警示例
