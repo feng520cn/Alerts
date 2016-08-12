@@ -1,0 +1,20 @@
+{% extends 'index.html' %} <!-- 继承ndex.html页面 -->
+
+{% block page %} <!-- 替换继承页面id="page"下面的代码 -->
+    <h1 class="page-header">推送消息</h1>
+    <div class="container-fluid">
+        <form class="form-signin" action="/PushWsMsg/" method="post">
+            {% csrf_token %}
+            <span class="input-group-addon" id="basic-addon2">{{user_info.username}}</span>
+            <br>
+            <label for="inputtext" class="sr-only">用户名</label>
+            <input type="text" name="username" id="username" class="form-control" placeholder="用户名" required>
+            <br>
+            <label for="text" class="sr-only">推送内容</label>
+            <textarea name="data" id="data" class="form-control" placeholder="推送内容" style="height: 200px; width: 100%;" required></textarea>
+            <br>
+            <button class="btn btn-lg btn-primary btn-block" type="submit">推送</button>
+            {{PushMsg_info}}
+        </form>
+    </div>
+{% endblock %} <!-- block替换结束 -->

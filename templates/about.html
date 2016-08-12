@@ -1,0 +1,18 @@
+{% extends 'index.html' %} <!-- 继承ndex.html页面 -->
+
+{% block page %} <!-- 替换继承页面id="page"下面的代码 -->
+<h1 class="page-header">关于</h1>
+<div class="container-fluid row placeholders">
+	<div class="col-xs-6">
+		<img src="/static/favicon.ico" class="img-responsive" alt="Generic placeholder thumbnail">
+	</div>
+	<div class="col-xs-6 text-left">
+		<h3>平台介绍</h3>
+		<p>运维服务平台</p>
+		<h3>作者</h3>
+		<br>作者：晓健</br>
+		<a href="mailto:晓健<1018883015@qq.com>">邮箱：1018883015@qq.com</a>
+		<br>版本：demo</br>
+	</div>
+</div>
+{% endblock %} <!-- block替换结束 -->

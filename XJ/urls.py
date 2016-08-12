@@ -21,4 +21,7 @@ urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^AlertsPush$', Alerts.AlertsPush),
     url(r'^AlertsAnalysis$', Alerts.AlertsAnalysis),
+    url(r'^ws/websocket/$', Alerts.views.websocket),
+    url(r'^PushWsMsg/$', Alerts.views.PushWsMsg),
+    url(r'^Alerts/$', Alerts.views.Alerts),
 ]

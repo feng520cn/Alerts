@@ -1,0 +1,112 @@
+{% extends 'index.html' %} <!-- 继承ndex.html页面 -->
+
+{% block page %} <!-- 替换继承页面id="page"下面的代码 -->
+    <script type="text/javascript" src="/static/jquery/js/md5.js"></script>
+
+    <script>
+        var heartbeat_timer = 0;
+        var health_timeout = 5000;
+        var ws;
+        var time = new Date();
+        var host = 'ws://' + window.location.host + '/ws/websocket/';
+        function init(){
+            ws = wsConn(host)
+        }
+        function keepalive(ws){
+{#            心跳#}
+            if(time.getTime() - last_health > health_timeout ){
+{#                此时即可以认为连接断开，可是设置重连或者关闭#}
+                ws = wsConn(host);
+            }else{
+                if( ws.bufferedAmount == 0 ){
+{#                    ping服务端#}
+                    ws.send( 'Sping' );
+                }
+            }
+        }
+        function wsConn(host){
+{#            连接websocket#}
+            clearInterval( heartbeat_timer );
+            try{
+                ws = new WebSocket(host);
+                ws.onopen = function(msg){
+{#                    完成连接#}
+                    last_health = time.getTime();
+                    heartbeat_timer = setInterval( function(){keepalive(ws)}, 30000 );};
+                ws.onmessage = function(msg){
+{#                    收到服务端推送过来的消息#}
+                    if( msg.data == 'Cping'  ){
+{#                        被服务端ping#}
+                        last_health = time.getTime();
+                        return;
+                    }
+                    Alert(JSON.parse(msg.data), "1"); };
+                ws.onclose   = function(msg){
+{#                    连接关闭#}
+                    clearInterval( heartbeat_timer );
+                    Alert("websocket已断开", "0");
+                };
+            }catch(ex){
+                Alert(ex, "0");
+            }
+            return ws;
+        };
+        window.onbeforeunload=function(){
+{#            离开页面的处理#}
+            try{
+                ws.close();
+                ws = null;
+            }
+            catch(ex){
+                ;
+            }
+        };
+
+        function Alert(msg, status){
+{#            填充div#}
+            if (status == "1"){
+{#                判断是否为汇总推送，否为真#}
+                if (msg.OldTime == undefined){
+{#                    判断是否为恢复告警，否为真#}
+                    if (msg.type == "0"){
+                        info = '告警对象: '+msg.hostname+'\n<strong>告警内容: '+msg.item+':'+msg.value+'</strong>\n发生时间: '+msg.datetime
+                        info = info.replace(/\n/g, '<br>')
+                        if (msg.level == 'Disaster'){
+                            color =  'alert-danger'
+                        }else{
+                            color =  'alert-warning'
+                        }
+                        data = '<div class="alert '+color+' alert-dismissible fade in" role="alert" id='+$.md5(msg.hostname+msg.EventID)+'><button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">×</span></button>'+info+'</div>';
+                        $('#Alerts').append(data);
+                    }else{
+                        $('#'+$.md5(msg.hostname+msg.EventID)).alert('close');
+                    }
+                }else{
+                    info = msg.text.replace(/\n/g, '<br>')
+                    data = '<div class="alert alert-info alert-dismissible fade in" role="alert" id='+$.md5(msg.OldTime+msg.NewTime)+'><button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">×</span></button>'+info+'</div>';
+                    $('#Analysis').html(data)
+                }
+            }else{
+                data = '<div class="alert alert-info alert-dismissible fade in" role="alert"><button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">×</span></button><strong>'+msg.data+'</strong></div>';
+                $('#Alerts').append(data);
+                $('#Analysis').append(data);
+            }
+        };
+    </script>
+
+    <body onload="init()">
+        <h1 class="page-header">告警平台</h1>
+    {% csrf_token %}
+        <span class="input-group-addon" id="basic-addon2">{{user_info.username}}</span>
+        <br>
+        <div class="row" style="position:relative;min-height:10px">
+            <div class="bs-standalone col-sm-3 col-md-2" data-id="dismissible-alert-js" id="Alerts" style="width:49%;border-right:1px solid black">
+            </div>
+{#            汇总告警展示#}
+            <div class="bs-standalone col-sm-3 col-md-2" data-id="dismissible-alert-js" id="Analysis" style="width:49%">
+            </div>
+        </div>
+    </body>
+
+{% endblock %} <!-- block替换结束 -->
+
