@@ -19,6 +19,8 @@ git clone https://git.oschina.net/XJGZ/Alerts.git Alerts
 cd Alerts
 #修改./Alerts/views.py的第11行，将mongoDB的连接信息配置上去
 #修改./Alerts/views.py的第41和86行，将校验码（密码）修改为自己定义的密码
+#初始mongodb数据monitor.Time={"type": "Old", "Time": str(int(time.time()))}
+#初始mongodb数据monitor.Time={"type": "New", "Time": str(int(time.time()))}
 ```
 
 **步骤 3**: 运行
@@ -81,6 +83,6 @@ http5分钟内400次数:74
 ```
 
 ##websocket
-```
-由于是图片，目前先不放示例
-```
+
+![websocket](http://git.oschina.net/XJGZ/Alerts/raw/master/static/demo.jpg)
+

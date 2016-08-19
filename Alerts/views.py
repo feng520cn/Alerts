@@ -3,18 +3,17 @@ import time
 import json
 
 from django.http import HttpResponse, HttpResponseRedirect
+
 # 临时关闭csrf检查
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib import auth
 
 from misc_func.misc_func import *
 from init.mongodb import *
-from dwebsocket import require_websocket
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render_to_response
 from django.template import RequestContext
-
-wsClients = {}
+from ws.views import sendWebSocket, AlertClients
 
 
 # 初始化mongodb连接池
@@ -104,7 +103,8 @@ def AlertsPush(request):
                                                upsert = True)
         # 推送websocket
         sendWebSocket('all', json.dumps(
-            {"type": type, "level": level, "item": item, "value": value, "hostname": hostname, "datetime": datetime, "EventID": EventID}))
+            {"type": type, "level": level, "item": item, "value": value, "hostname": hostname, "datetime": datetime, "EventID": EventID}),
+                      AlertClients)
         return HttpResponse(status = 204)
     else:
         return HttpResponse(status = 404)
@@ -172,86 +172,13 @@ def AlertsAnalysis(request):
                                           time.strftime('%Y.%m.%d %H:%M:%S', time.localtime(int(NewTime))), text)
             # 发出告警
             pushMail('告警', text)
-            sendWebSocket('all', json.dumps({"OldTime": OldTime, "NewTime": NewTime, "text": text}))
+            sendWebSocket('all', json.dumps({"OldTime": OldTime, "NewTime": NewTime, "text": text}), AlertClients)
 
         mgclient.monitor.Alerts.remove({OldTime: {"$type": 3}})
 
         return HttpResponse(status = 204)
     else:
         return HttpResponse(status = 404)
-
-
-@require_websocket
-def websocket(request):
-    # websocket接口
-    global wsClients
-    username = str(request.user)
-    ws = request.websocket
-    wsClients.update({username: ws})
-    # I_logger.info({"username": username, "info": "websocket connection is successful"})
-    # output = 'websocket close the connection'
-    while 1:
-        if wsClients[username] == ws:
-            # socket是否断开后清除对象
-            if not CheckWebSocket(username):
-                del wsClients[username]
-                break
-        else:
-            # output = 'websocket reconnection'
-            break
-        time.sleep(30)
-    # I_logger.info({"username": username, "info": output})
-    return HttpResponse(status = 204)
-
-
-def CheckWebSocket(username):
-    # 检查socket是否断开，断开则返回False
-    global wsClients
-    try:
-        # 没消息则返回True，有消息则为消息内容，socket断开则报异常
-        data = wsClients[username].read(True)
-        # 收到客户端ping则回应服务端ping
-        if data == 'Cping':
-            wsClients[username].send('Sping')
-        elif not data:
-            return False
-        return True
-    except:
-        return False
-
-
-def sendWebSocket(username, data):
-    # 通过websocket发送消息到指定用户，username为all时，推送所有在线用户
-    # data必须是utf-8编码
-    global wsClients
-    if username == 'all':
-        # 标记push是否有失败的情况，True则返回失败
-        pushError = False
-        for username in wsClients:
-            ws = wsClients[username]
-            # I_logger.info({"username": username, "info": "send websocket"})
-            if CheckWebSocket(username):
-                ws.send(data)
-            else:
-                # websocket是否异常，若异常，则状态标记置为True
-                # I_logger.error({"username": username, "info": "send websocket failed, websocket connection is broken"})
-                pushError = True
-        if pushError:
-            return False
-        else:
-            return True
-    else:
-        ws = wsClients.get(username)
-        if ws:
-            # I_logger.info({"username": username, "info": "send websocket"})
-            if CheckWebSocket(username):
-                ws.send(data)
-                return True
-            else:
-                # I_logger.error({"username": username, "info": "send websocket failed, websocket connection is broken"})
-                return False
-        else:
-            return False
 
 
 @login_required
@@ -262,7 +189,7 @@ def PushWsMsg(request):
         if login_user_info.is_superuser:
             username = request.POST["username"]
             data = request.POST["data"].encode('utf-8')
-            if sendWebSocket(username, data):
+            if sendWebSocket(username, data, AlertClients):
                 output = "推送成功"
             else:
                 output = "部分用户推送失败"

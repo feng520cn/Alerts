@@ -13,15 +13,18 @@ Including another URLconf
     1. Import the include() function: from django.conf.urls import url, include
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
-from django.conf.urls import url
+from django.conf.urls import url, include
 from django.contrib import admin
 import Alerts.views as Alerts
+import ws.urls
 
 urlpatterns = [
+
+    url(r'^ws/', include(ws.urls)),
+
     url(r'^admin/', admin.site.urls),
     url(r'^AlertsPush$', Alerts.AlertsPush),
     url(r'^AlertsAnalysis$', Alerts.AlertsAnalysis),
-    url(r'^ws/websocket/$', Alerts.views.websocket),
     url(r'^PushWsMsg/$', Alerts.views.PushWsMsg),
     url(r'^Alerts/$', Alerts.views.Alerts),
 ]
