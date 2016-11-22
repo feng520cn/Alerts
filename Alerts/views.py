@@ -13,6 +13,7 @@ from init.mongodb import *
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render_to_response
 from django.template import RequestContext
+from django.http import JsonResponse
 from ws.views import sendWebSocket, AlertClients
 
 
@@ -96,6 +97,7 @@ def AlertsPush(request):
             if level == 'Disaster':
                 text = '告警对象: %s \n告警内容: %s:%s \n发生时间: %s' % (hostname, item, value, datetime)
                 # 发出告警
+                PushWX('corpsecret', agentid, text, request)
                 pushMail('告警', text)
         else:
             mgclient.monitor.Alerts.update_one({"%s.hostname" % NewTime: hostname, "%s.EventID" % NewTime: EventID},
@@ -173,6 +175,7 @@ def AlertsAnalysis(request):
             # 发出告警
             pushMail('告警', text)
             sendWebSocket('all', json.dumps({"OldTime": OldTime, "NewTime": NewTime, "text": text}), AlertClients)
+            PushWX('corpsecret', agentid, text, request)
 
         mgclient.monitor.Alerts.remove({OldTime: {"$type": 3}})
 
@@ -209,3 +212,33 @@ def Alerts(request):
         return render_to_response("Alerts.html", {"user_info": login_user_info},
                                   context_instance = RequestContext(request))
     return HttpResponse(status = 403)
+
+
+@csrf_exempt
+def GetWXtoken(request):
+    # 获取微信access_token
+    if request.method == 'POST':
+        corpsecret = request.POST['corpsecret']
+        # 企业id
+        corpid = 'xxx'
+        # accesstoken缓存在mongodb
+        try:
+            accesstoken = mgclient.wx.accesstoken.find_one({"corpid": corpid, "corpsecret": corpsecret},
+                                                           {"_id": 0, "accesstoken": 1})["accesstoken"]
+        except:
+            accesstoken = 'test'
+
+        errcode = json.loads(
+            httpRequest('POST', 'https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token=%s' % accesstoken,
+                        '{"msgtype":"text"}').read())['errcode']
+        # 如果accesstoken失效，则重新获取
+        if errcode != 0:
+            accesstoken = json.loads(httpRequest('GET',
+                                                 'https://qyapi.weixin.qq.com/cgi-bin/gettoken?corpid=%s&corpsecret=%s' % (
+                                                 corpid, corpsecret)).read())['access_token']
+            mgclient.wx.accesstoken.update_one({"corpid": corpid, "corpsecret": corpsecret},
+                                               {"$set": {"accesstoken": accesstoken}}, upsert = True)
+        return JsonResponse({"accesstoken": accesstoken})
+    return JsonResponse(error_res())
+
+

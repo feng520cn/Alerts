@@ -27,4 +27,6 @@ urlpatterns = [
     url(r'^AlertsAnalysis$', Alerts.AlertsAnalysis),
     url(r'^PushWsMsg/$', Alerts.views.PushWsMsg),
     url(r'^Alerts/$', Alerts.views.Alerts),
+    url(r'^GetWXtoken$', Alerts.views.GetWXtoken),
+
 ]

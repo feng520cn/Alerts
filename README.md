@@ -5,6 +5,7 @@
 - 告警收敛是基于主机维度进行收敛的
 - 所有告警级别都会汇总，且告警级别为Disaster的，会立即发出
 - 依赖mongoDB存储数据
+- 支持发送报警至企业微信
 
 ##安装/使用
 **步骤 1**: 下载代码
@@ -86,3 +87,10 @@ http5分钟内400次数:74
 
 ![websocket](http://git.oschina.net/XJGZ/Alerts/raw/master/static/demo.jpg)
 
+
+##微信报警
+```
+进入 http://work.weixin.qq.com/wework_admin/frame#apps/createApiApp 创建一个消息型应用
+记录页面中的secret和应用ID，将来作为misc_func.PushWX中的corpsecret和agentid参数
+```
+![wx](http://git.oschina.net/XJGZ/Alerts/raw/master/static/WXdemo.jpg)
