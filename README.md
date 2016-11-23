@@ -91,6 +91,6 @@ http5分钟内400次数:74
 ##微信报警
 ```
 进入 http://work.weixin.qq.com/wework_admin/frame#apps/createApiApp 创建一个消息型应用
-记录页面中的secret和应用ID，将来作为misc_func.PushWX中的corpsecret和agentid参数（在100和178行）
+记录页面中的secret和应用ID，将来作为misc_func.PushWX中的corpsecret和agentid参数（在./Alerts/views.py文件的100、178和223行）
 ```
 ![wx](http://git.oschina.net/XJGZ/Alerts/raw/master/static/WXdemo.jpg)
