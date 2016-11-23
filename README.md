@@ -18,8 +18,8 @@ git clone https://git.oschina.net/XJGZ/Alerts.git Alerts
 
 ```
 cd Alerts
-#修改./Alerts/views.py的第11行，将mongoDB的连接信息配置上去
-#修改./Alerts/views.py的第41和86行，将校验码（密码）修改为自己定义的密码
+#修改./Alerts/views.py的第21行，将mongoDB的连接信息配置上去
+#修改./Alerts/views.py的第76和126行，将校验码（密码）修改为自己定义的密码
 #初始mongodb数据monitor.Time={"type": "Old", "Time": str(int(time.time()))}
 #初始mongodb数据monitor.Time={"type": "New", "Time": str(int(time.time()))}
 ```
@@ -91,6 +91,6 @@ http5分钟内400次数:74
 ##微信报警
 ```
 进入 http://work.weixin.qq.com/wework_admin/frame#apps/createApiApp 创建一个消息型应用
-记录页面中的secret和应用ID，将来作为misc_func.PushWX中的corpsecret和agentid参数
+记录页面中的secret和应用ID，将来作为misc_func.PushWX中的corpsecret和agentid参数（在100和178行）
 ```
 ![wx](http://git.oschina.net/XJGZ/Alerts/raw/master/static/WXdemo.jpg)
