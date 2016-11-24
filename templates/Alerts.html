@@ -5,55 +5,58 @@
 
     <script>
         var heartbeat_timer = 0;
-        var health_timeout = 5000;
+        var health_timeout = 35000;
         var ws;
         var wsStatus = "1";
-        var time = new Date();
         var host = 'ws://' + window.location.host + '/ws/Alerts/';
         function init(){
-            wsConn(host)
+            wsConn(host);
+            last_health = new Date().getTime();
+            heartbeat_timer = setInterval( function(){keepalive(ws)}, 30000 );
         }
         function keepalive(ws){
 {#            心跳#}
-            if(time.getTime() - last_health > health_timeout ){
-{#                此时即可以认为连接断开，可是设置重连或者关闭#}
+            if(new Date().getTime() - last_health > health_timeout ){
+{#                此时即可以认为连接断开，可设置重连或者关闭#}
                 wsConn(host);
             }else{
                 if( ws.bufferedAmount == 0 ){
 {#                    ping服务端#}
-                    ws.send( 'Sping' );
+                    try{
+                        ws.send('Cping');
+                    }catch(e){
+                        console.log(e.message);
+                    }
                 }
             }
         }
         function wsConn(host) {
             {#            连接websocket#}
-            clearInterval(heartbeat_timer);
             ws = new WebSocket(host);
             ws.onopen = function (msg) {
                 {#                    完成连接#}
-                last_health = time.getTime();
-                heartbeat_timer = setInterval( function(){keepalive(ws)}, 30000 );
+                last_health = new Date().getTime();
+                console.log('websocket connection is successful');
             };
             ws.onmessage = function (msg) {
                 {#                    收到服务端推送过来的消息#}
-                if (msg.data == 'Cping') {
+                last_health = new Date().getTime();
+                if (msg.data == 'Sping') {
                     {#                        被服务端ping#}
-                    last_health = time.getTime();
                     return;
                 }
                 Alert(JSON.parse(msg.data), "1");
             };
-            ws.onerror = function (msg) {
-                clearInterval(heartbeat_timer);
-                Alert(msg, "0");
-            };
+            <!--ws.onerror = function (msg) {-->
+                <!--Alert(msg, "0");-->
+            <!--};-->
             ws.onclose = function (msg) {
                 {#                    客户端关闭则关闭socket，其他情况则重连#}
                 if (wsStatus == "0"){
                     clearInterval(heartbeat_timer);
                     Alert({data:"websocket已断开"}, "0");
-                }else{
-                    wsConn(host);
+                {# }else{  #}
+                {#    wsConn(host); #}
                 }
             };
         };
@@ -64,7 +67,7 @@
                 wsStatus = "0";
                 ws.close();
             }catch(e){
-                ;
+                console.log(e.message);
             }
         };
 
