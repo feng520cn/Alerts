@@ -220,13 +220,13 @@ def GetWXtoken(request):
     if request.method == 'POST':
         corpsecret = request.POST['corpsecret']
         # 企业id
-        corpid = 'xxx'
+        corpid = '1000002'
         # accesstoken缓存在mongodb
         try:
             accesstoken = mgclient.wx.accesstoken.find_one({"corpid": corpid, "corpsecret": corpsecret},
                                                            {"_id": 0, "accesstoken": 1})["accesstoken"]
         except:
-            accesstoken = 'test'
+            accesstoken = '_cuZyl2GAV1HcgzLSCvOyr-lmo-mpmycmaS3ZImH9Bc'
 
         errcode = json.loads(
             httpRequest('POST', 'https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token=%s' % accesstoken,
